@@ -1,0 +1,73 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.0/jquery.min.js" type="text/javascript"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/mustache.js/0.7.2/mustache.min.js" type="text/javascript"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/mathjs/0.20.0/math.min.js" type="text/javascript"></script>
+</head>
+<body>
+  A<select id="A">
+    <option>1</option>
+    <option>2</option>
+    <option>3</option>
+    <option>4</option>
+    <option>5</option>
+    <option>6</option>
+    <option>7</option>
+    <option>8</option>
+    <option>9</option>
+  </select>
+  B<select id="B">
+    <option>1</option>
+    <option>2</option>
+    <option>3</option>
+    <option>4</option>
+    <option>5</option>
+    <option>6</option>
+    <option>7</option>
+    <option>8</option>
+    <option>9</option>
+  </select>
+  <br/>
+  <h3>Enter equations in <a href="https://github.com/josdejong/mathjs/blob/master/docs/expressions.md#syntax" targer="_blank">Math.js syntax</a></h3>
+  <input id="equation1" type="text" value="{{A}} > {{B}}" size="50" />
+  <input id="equation2" type="text" value="{{A}} ^ {{B}}" size="50" />
+  <input id="equation3" type="text" value="({{A}} * {{B}}) / ({{A}} + {{B}})" size="50" />
+  <br/>
+  <h3>Equivalent values will appear here</h3>
+  <input id="output1" type="text" size="50" />
+  <input id="output2" type="text" size="50" />
+  <input id="output3" type="text" size="50" />
+  <br/>
+  <input id="validate" type="button" value="check"/>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      // create an instance of math.js
+      var math = mathjs();
+      $("#validate").on( "click", function() {
+        var eq1 = $("#equation1").val();
+        var eq2 = $("#equation2").val();
+        var eq3 = $("#equation3").val();
+        // dynamically build an object based on the ID and value of the dropdowns
+        // to be passed to Mustache for variable replacement
+        var selects = {};
+        $('select').each( function( index, element ){
+          var variable = this.id;
+          var value = $(this).find(":selected").text();
+          eval("selects." + variable + " = '" + value + "'");
+        });
+
+        var output1 = Mustache.render(eq1, selects);
+        var output2 = Mustache.render(eq2, selects);
+        var output3 = Mustache.render(eq3, selects);
+        // use math.js
+        $("#output1").val(math.eval(output1));
+        $("#output2").val(math.eval(output2));
+        $("#output3").val(math.eval(output3));
+      });
+
+    });
+  </script>
+</body>
+</html>
