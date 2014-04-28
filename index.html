@@ -28,27 +28,46 @@
     <option>8</option>
     <option>9</option>
   </select>
+  C<select id="C">
+    <option>correct</option>
+    <option>incorrect</option>
+  </select>
+  D<select id="D">
+    <option>no</option>
+    <option>at least one</option>
+  </select>
   <br/>
   <h3>Enter equations in <a href="https://github.com/josdejong/mathjs/blob/master/docs/expressions.md#syntax" targer="_blank">Math.js syntax</a></h3>
-  <input id="equation1" type="text" value="{{A}} > {{B}}" size="50" />
-  <input id="equation2" type="text" value="{{A}} ^ {{B}}" size="50" />
-  <input id="equation3" type="text" value="({{A}} * {{B}}) / ({{A}} + {{B}})" size="50" />
+  <input class="equation" type="text" value="{{A}} > {{B}}" size="50" />
+  <input class="equation" type="text" value="{{A}} ^ {{B}} > 7" size="50" />
+  <input class="equation" type="text" value="({{A}} * {{B}}) / ({{A}} + {{B}})" size="50" />
   <br/>
+  <div id="equationErrors"></div>
   <h3>Equivalent values will appear here</h3>
-  <input id="output1" type="text" size="50" />
-  <input id="output2" type="text" size="50" />
-  <input id="output3" type="text" size="50" />
+  <input class="output" type="text" size="50" />
+  <input class="output" type="text" size="50" />
+  <input class="output" type="text" size="50" />
   <br/>
   <input id="validate" type="button" value="check"/>
 
   <script type="text/javascript">
     $(document).ready(function() {
+
       // create an instance of math.js
       var math = mathjs();
       $("#validate").on( "click", function() {
-        var eq1 = $("#equation1").val();
-        var eq2 = $("#equation2").val();
-        var eq3 = $("#equation3").val();
+
+        // lightweight error checking for Mustache syntax
+        function sloppyMustache(equationNode) {
+          var nodeValue = equationNode.value;
+          var left = nodeValue.match(/{{/g);
+          var right = nodeValue.match(/}}/g);
+          if (left.length != right.length) {
+            return false;
+          } else {
+            return true;
+          };
+        };
         // dynamically build an object based on the ID and value of the dropdowns
         // to be passed to Mustache for variable replacement
         var selects = {};
@@ -58,13 +77,19 @@
           eval("selects." + variable + " = '" + value + "'");
         });
 
-        var output1 = Mustache.render(eq1, selects);
-        var output2 = Mustache.render(eq2, selects);
-        var output3 = Mustache.render(eq3, selects);
-        // use math.js
-        $("#output1").val(math.eval(output1));
-        $("#output2").val(math.eval(output2));
-        $("#output3").val(math.eval(output3));
+        // map the input boxes for the equations to their equivalent outputs
+        // first render the mustache templates then eval with math.js
+        var eq = $(".equation");
+        $(".output").each( function( index, element ){
+          if (sloppyMustache(eq[index]) ) {
+            element.value = math.eval(Mustache.render(eq[index].value, selects));
+          } else {
+            $("#equationErrors").innerText = "hello";
+            console.log ( $("#equationErrors").innerText );
+            $("#equationErrors").append( eq[index].value + " contains mismatched braces" + "<br/>" );
+          }
+        });
+
       });
 
     });
