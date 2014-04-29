@@ -6,7 +6,7 @@
   <script src="http://cdnjs.cloudflare.com/ajax/libs/mathjs/0.20.0/math.min.js" type="text/javascript"></script>
 </head>
 <body>
-  A<select id="A">
+  A<select id="A" class="evaluable">
     <option>1</option>
     <option>2</option>
     <option>3</option>
@@ -17,7 +17,7 @@
     <option>8</option>
     <option>9</option>
   </select>
-  B<select id="B">
+  B<select id="B" class="evaluable">
     <option>1</option>
     <option>2</option>
     <option>3</option>
@@ -28,37 +28,33 @@
     <option>8</option>
     <option>9</option>
   </select>
-  C<select id="C">
-    <option>correct</option>
-    <option>incorrect</option>
-  </select>
-  D<select id="D">
-    <option>no</option>
-    <option>at least one</option>
-  </select>
+  C<input class="evaluable" id="C" type="text" value="" />
+  D<input class="evaluable" id="D" type="text" value="" />
   <br/>
   <h3>Enter equations in <a href="https://github.com/josdejong/mathjs/blob/master/docs/expressions.md#syntax" targer="_blank">Math.js syntax</a></h3>
-  <input class="equation" type="text" value="{{A}} > {{B}}" size="50" />
-  <input class="equation" type="text" value="{{A}} ^ {{B}} > 7" size="50" />
-  <input class="equation" type="text" value="({{A}} * {{B}}) / ({{A}} + {{B}})" size="50" />
+  <input class="equation" type="text" value="{{A}} > {{B}}" size="30" />
+  <input class="equation" type="text" value="({{A}} * {{B}}) / ({{A}} + {{B}}) > 1" size="30" />
+  <input class="equation" type="text" value="" size="50" />
   <br/>
   <div id="equationErrors"></div>
   <h3>Equivalent values will appear here</h3>
-  <input class="output" type="text" size="50" />
-  <input class="output" type="text" size="50" />
-  <input class="output" type="text" size="50" />
+  <input class="output" type="text" size="30" />
+  <input class="output" type="text" size="30" />
+  <input class="output" type="text" size="30" />
   <br/>
   <input id="validate" type="button" value="check"/>
 
   <script type="text/javascript">
     $(document).ready(function() {
 
-      // create an instance of math.js
+      // create an instance of math.js and its parser
       var math = mathjs();
+      var parser = math.parser();
+
       $("#validate").on( "click", function() {
 
         // lightweight error checking for Mustache syntax
-        function sloppyMustache(equationNode) {
+        function groomedMustache(equationNode) {
           var nodeValue = equationNode.value;
           var left = nodeValue.match(/{{/g);
           var right = nodeValue.match(/}}/g);
@@ -71,7 +67,7 @@
         // dynamically build an object based on the ID and value of the dropdowns
         // to be passed to Mustache for variable replacement
         var selects = {};
-        $('select').each( function( index, element ){
+        $('.evaluable').each( function( index, element ){
           var variable = this.id;
           var value = $(this).find(":selected").text();
           eval("selects." + variable + " = '" + value + "'");
@@ -81,12 +77,19 @@
         // first render the mustache templates then eval with math.js
         var eq = $(".equation");
         $(".output").each( function( index, element ){
-          if (sloppyMustache(eq[index]) ) {
-            element.value = math.eval(Mustache.render(eq[index].value, selects));
-          } else {
-            $("#equationErrors").innerText = "hello";
-            console.log ( $("#equationErrors").innerText );
-            $("#equationErrors").append( eq[index].value + " contains mismatched braces" + "<br/>" );
+          if (eq[index].value != "") {
+            if (groomedMustache(eq[index]) ) {
+              var output = Mustache.render(eq[index].value, selects);
+              if ($(eq[index]).hasClass("string-match")) {
+                output = output.replace(/'/g,'') //need to remove the single quotes around the literal
+                element.value = eval(output);
+                console.log(output);
+              } else {
+                element.value = math.eval(output);
+              }
+            } else {
+              $("#equationErrors").append( eq[index].value + " contains mismatched braces" + "<br/>" );
+            }
           }
         });
 
