@@ -7,38 +7,50 @@
 </head>
 <body>
   A<select id="A" class="evaluable">
-    <option>1</option>
-    <option>2</option>
-    <option>3</option>
-    <option>4</option>
-    <option>5</option>
-    <option>6</option>
-    <option>7</option>
-    <option>8</option>
-    <option>9</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+    <option value="9">9</option>
   </select>
   B<select id="B" class="evaluable">
-    <option>1</option>
-    <option>2</option>
-    <option>3</option>
-    <option>4</option>
-    <option>5</option>
-    <option>6</option>
-    <option>7</option>
-    <option>8</option>
-    <option>9</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+    <option value="9">9</option>
   </select>
-  C<input class="evaluable" id="C" type="text" value="" />
-  D<input class="evaluable" id="D" type="text" value="" />
+  C<select id="C" class="evaluable">
+    <option>correct</option>
+    <option>incorrect</option>
+  </select>
+  D<select id="D" class="evaluable">
+    <option>no</option>
+    <option>at least one</option>
+  </select>
+  E<input class="evaluable" id="E" type="text" value="" />
+  F<input class="evaluable" id="F" type="text" value="" />
   <br/>
   <h3>Enter equations in <a href="https://github.com/josdejong/mathjs/blob/master/docs/expressions.md#syntax" targer="_blank">Math.js syntax</a></h3>
   <input class="equation" type="text" value="{{A}} > {{B}}" size="30" />
   <input class="equation" type="text" value="({{A}} * {{B}}) / ({{A}} + {{B}}) > 1" size="30" />
-  <input class="equation" type="text" value="" size="50" />
+  <input class="equation string-match" type="text" value="'{{C}}' == 'correct' && '{{D}}' == 'at least one'" size="50" />
+  <input class="equation" type="text" value="" size="30" />
+  <input class="equation" type="text" value="" size="30" />
   <br/>
   <div id="equationErrors"></div>
   <h3>Equivalent values will appear here</h3>
   <input class="output" type="text" size="30" />
+  <input class="output" type="text" size="30" />
+  <input class="output" type="text" size="50" />
   <input class="output" type="text" size="30" />
   <input class="output" type="text" size="30" />
   <br/>
@@ -81,9 +93,7 @@
             if (groomedMustache(eq[index]) ) {
               var output = Mustache.render(eq[index].value, selects);
               if ($(eq[index]).hasClass("string-match")) {
-                output = output.replace(/'/g,'') //need to remove the single quotes around the literal
                 element.value = eval(output);
-                console.log(output);
               } else {
                 element.value = math.eval(output);
               }
